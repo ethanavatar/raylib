@@ -1,0 +1,3 @@
+[submodule "selfbuild"]
+	path = selfbuild
+	url = git@github.com:ethanavatar/selfbuild.git
