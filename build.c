@@ -19,6 +19,7 @@ extern struct Build __declspec(dllexport) build(struct Build_Context *);
 struct Build build(struct Build_Context *context) {
 
     static char *files[] = {
+        "src/rcore.c",
         "src/rshapes.c",
         "src/rtextures.c",
         "src/rtext.c",
@@ -29,14 +30,30 @@ struct Build build(struct Build_Context *context) {
 
     // @TODO: It would be nice to be able to "install" individual headers by copying them to the build directory.
     // And maybe dependent modules can automatically include the build directory of their dependencies
-    static char *includes[] = { "src" };
+    static char *includes[] = {
+        "src",
+        "src/external/glfw/include",
+        "src/platforms",
+    };
+
+    static char *compile_flags[] = {
+        "-DPLATFORM_DESKTOP_GLFW",
+        "-DSUPPORT_MODULE_RSHAPES",
+        "-DSUPPORT_MODULE_RTEXTURES",
+        "-DSUPPORT_MODULE_RTEXT",
+        "-DSUPPORT_MODULE_RMODELS",
+        "-DSUPPORT_MODULE_RAUDIO",
+    };
 
     static struct Build lib = {
-        .kind = Build_Kind_Module,
+        .kind = Build_Kind_Static_Library,
         .name = "raylib",
 
         .sources        = files,
         .sources_count  = sizeof(files) / sizeof(char *),
+
+        .compile_flags        = compile_flags,
+        .compile_flags_count  = sizeof(compile_flags) / sizeof(char *),
 
         .includes       = includes,
         .includes_count = sizeof(includes) / sizeof(char *),
