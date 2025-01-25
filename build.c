@@ -20,6 +20,7 @@ struct Build build(struct Build_Context *context) {
 
     static char *files[] = {
         "src/rcore.c",
+        "src/utils.c",
         "src/rshapes.c",
         "src/rtextures.c",
         "src/rtext.c",
@@ -43,6 +44,16 @@ struct Build build(struct Build_Context *context) {
         "-DSUPPORT_MODULE_RTEXT",
         "-DSUPPORT_MODULE_RMODELS",
         "-DSUPPORT_MODULE_RAUDIO",
+        "-DGRAPHICS_API_OPENGL_33",
+    };
+
+    static char *link_flags[] = {
+        /*
+        "-lwinmm",
+        "-lgdi32",
+        "-lopengl32",
+        */
+        //"winmm.lib", "gdi32.lib", "user32.lib",
     };
 
     static struct Build lib = {
@@ -54,6 +65,9 @@ struct Build build(struct Build_Context *context) {
 
         .compile_flags        = compile_flags,
         .compile_flags_count  = sizeof(compile_flags) / sizeof(char *),
+
+        .link_flags        = link_flags,
+        .link_flags_count  = sizeof(link_flags) / sizeof(char *),
 
         .includes       = includes,
         .includes_count = sizeof(includes) / sizeof(char *),
