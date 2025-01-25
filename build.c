@@ -14,9 +14,9 @@
 #include "stdlib/scratch_memory.c"
 #include "stdlib/string_builder.c"
 
-extern struct Build __declspec(dllexport) build(struct Build_Context *);
+extern struct Build __declspec(dllexport) build(struct Build_Context *, enum Build_Kind);
 
-struct Build build(struct Build_Context *context) {
+struct Build build(struct Build_Context *context, enum Build_Kind kind) {
 
     static char *files[] = {
         "src/rcore.c",
@@ -47,31 +47,33 @@ struct Build build(struct Build_Context *context) {
         "-DGRAPHICS_API_OPENGL_33",
     };
 
-    static char *link_flags[] = {
-        /*
-        "-lwinmm",
-        "-lgdi32",
-        "-lopengl32",
-        */
-        //"winmm.lib", "gdi32.lib", "user32.lib",
-    };
+    static char **link_flags       = { 0 };
+    static size_t link_flags_count = 0;
+
+    if (kind == Build_Kind_Shared_Library) {
+        link_flags_count = 3;
+        link_flags = calloc(3, sizeof(char *));
+        link_flags[0] = strdup("-lwinmm");
+        link_flags[1] = strdup("-lgdi32");
+        link_flags[2] = strdup("-lopengl32");
+    }
 
     static struct Build lib = {
-        .kind = Build_Kind_Static_Library,
         .name = "raylib",
 
         .sources        = files,
         .sources_count  = sizeof(files) / sizeof(char *),
 
-        .compile_flags        = compile_flags,
-        .compile_flags_count  = sizeof(compile_flags) / sizeof(char *),
-
-        .link_flags        = link_flags,
-        .link_flags_count  = sizeof(link_flags) / sizeof(char *),
+        .compile_flags       = compile_flags,
+        .compile_flags_count = sizeof(compile_flags) / sizeof(char *),
 
         .includes       = includes,
         .includes_count = sizeof(includes) / sizeof(char *),
     };
+
+    lib.kind = kind;
+    lib.link_flags = link_flags;
+    lib.link_flags_count = link_flags_count;
 
     return lib;
 }
@@ -96,7 +98,7 @@ int main(void) {
         .current_directory   = cwd,
     };
 
-    struct Build module = build(&context);
+    struct Build module = build(&context, Build_Kind_Static_Library);
     module.root_dir = ".";
     build_module(&context, &module);
 
